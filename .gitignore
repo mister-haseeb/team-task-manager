@@ -4,3 +4,5 @@ node_modules/
 !.env.example
 dist/
 coverage/
+build/
+.DS_Store
