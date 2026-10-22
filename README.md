@@ -2,7 +2,8 @@
 
 A web app for small teams to organise their work. Users register, create teams, add members, and create, assign and track tasks, then filter them by team, assignee, status or priority.
 
-**Live demo:** _add the Cloud Run URL here after deploying_
+**Live demo (Google Cloud Run):** _add the Cloud Run URL here after deploying_
+**Mirror (Render, free tier):** _add the Render URL here_. It sleeps when idle, so the first visit can take about a minute.
 
 ## Features
 
@@ -295,6 +296,15 @@ Cloud Build builds the [Dockerfile](Dockerfile), and the container applies any p
 gcloud run services update team-task-manager --region us-central1 \
   --update-env-vars APP_URL=https://YOUR-SERVICE-URL.run.app
 ```
+
+## Free demo on Render
+
+A second copy of the app runs on [Render](https://render.com)'s free plan, using the same `Dockerfile`. [render.yaml](render.yaml) describes the web service and a free PostgreSQL database:
+
+1. Sign in to Render with GitHub (no card needed).
+2. Go to **New → Blueprint**, choose this repository and click **Apply**.
+
+Render creates the database, generates `SESSION_SECRET`, builds the image and runs the migrations on start. It redeploys after each push to `main` once the CI checks pass. On the free plan the service sleeps after 15 minutes without traffic, and the free database expires after 30 days.
 
 ## Development workflow
 
