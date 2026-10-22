@@ -31,7 +31,8 @@ async function createInvite(teamId, email, inviter) {
     to: email,
     teamName: teams[0].name,
     inviterName: inviter.name,
-    acceptUrl: `${process.env.APP_URL || 'http://localhost:5173'}/invites/${token}`,
+    // RENDER_EXTERNAL_URL is set automatically on Render
+    acceptUrl: `${process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:5173'}/invites/${token}`,
   });
   return invite;
 }
