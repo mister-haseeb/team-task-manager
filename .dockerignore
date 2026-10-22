@@ -5,3 +5,4 @@
 .github
 *.md
 docker-compose.yml
+server/tests

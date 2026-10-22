@@ -3,7 +3,8 @@ const bcrypt = require('bcrypt');
 const db = require('../config/db');
 const httpError = require('../utils/httpError');
 
-const SALT_ROUNDS = 12;
+// Lower in tests only (BCRYPT_ROUNDS=4) to keep them fast
+const SALT_ROUNDS = Number(process.env.BCRYPT_ROUNDS) || 12;
 const PUBLIC_COLUMNS = 'id, name, email, created_at';
 
 async function createUser({ name, email, password }) {
