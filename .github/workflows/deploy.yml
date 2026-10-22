@@ -1,0 +1,57 @@
+# Deploys to Google Cloud Run whenever main is updated (or when run manually).
+# Skipped until the GCP_* repository variables are set; see "Continuous deployment" in the README.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: Run CI before deploying
+    uses: ./.github/workflows/ci.yml
+
+  deploy:
+    name: Deploy to Cloud Run
+    needs: test
+    if: ${{ vars.GCP_PROJECT_ID != '' }}
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      id-token: write # lets GitHub prove its identity to Google (no stored keys)
+    env:
+      SERVICE: team-task-manager
+      REGION: ${{ vars.GCP_REGION }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Build and deploy
+        run: |
+          gcloud run deploy "$SERVICE" \
+            --project "${{ vars.GCP_PROJECT_ID }}" \
+            --region "$REGION" \
+            --source . \
+            --allow-unauthenticated \
+            --add-cloudsql-instances "${{ vars.GCP_CLOUD_SQL_INSTANCE }}" \
+            --update-secrets DATABASE_URL=DATABASE_URL:latest,SESSION_SECRET=SESSION_SECRET:latest \
+            --update-env-vars NODE_ENV=production \
+            --quiet
+
+      - name: Show the live URL
+        run: |
+          URL=$(gcloud run services describe "$SERVICE" --project "${{ vars.GCP_PROJECT_ID }}" --region "$REGION" --format 'value(status.url)')
+          echo "Deployed to $URL" >> "$GITHUB_STEP_SUMMARY"
+          curl --fail --silent --retry 5 --retry-delay 5 "$URL/api/health"

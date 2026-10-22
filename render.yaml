@@ -1,0 +1,30 @@
+# Free demo deployment on Render (render.com), alongside the main Google Cloud deployment.
+# In Render: New > Blueprint > pick this repository. It creates the web service and database below.
+services:
+  - type: web
+    name: team-task-manager
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon
+    branch: main
+    # Redeploy after each push to main, once the GitHub checks (CI) have passed
+    autoDeployTrigger: checksPass
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: team-task-manager-db
+          property: connectionString
+
+databases:
+  - name: team-task-manager-db
+    plan: free
+    region: oregon
+    databaseName: team_task_manager
+    user: ttm_app
+    postgresMajorVersion: '16'
