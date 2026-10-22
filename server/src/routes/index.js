@@ -3,6 +3,7 @@ const express = require('express');
 const requireAuth = require('../middleware/requireAuth');
 const authRoutes = require('./auth.routes');
 const teamRoutes = require('./team.routes');
+const taskRoutes = require('./task.routes');
 
 const router = express.Router();
 
@@ -12,5 +13,6 @@ router.use('/auth', authRoutes);
 // Everything below requires a logged-in user
 router.use(requireAuth);
 router.use('/teams', teamRoutes);
+router.use('/tasks', taskRoutes);
 
 module.exports = router;
