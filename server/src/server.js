@@ -1,7 +1,7 @@
 require('dotenv').config({ quiet: true });
 const app = require('./app');
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5050;
 
 // Express 5 passes listen errors (e.g. port already in use) to this callback
 app.listen(PORT, (err) => {

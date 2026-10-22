@@ -65,7 +65,7 @@ Then edit `server/.env`:
 
 | Variable         | Description                                                                  | Example                                                           |
 | ---------------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| `PORT`           | Port for the API                                                             | `5000`                                                            |
+| `PORT`           | Port for the API                                                             | `5050`                                                            |
 | `NODE_ENV`       | `development` or `production`                                                | `development`                                                     |
 | `SESSION_SECRET` | Long random string used to sign the session cookie (required in production)  | output of `openssl rand -hex 32`                                  |
 | `SESSION_STORE`  | `postgres` or `memory` (default: `postgres` in production, `memory` in dev)  | `postgres`                                                        |
@@ -88,7 +88,7 @@ npm run migrate
 In two terminals:
 
 ```bash
-npm run dev:server   # API on http://localhost:5000
+npm run dev:server   # API on http://localhost:5050
 npm run dev:client   # React app on http://localhost:5173
 ```
 
