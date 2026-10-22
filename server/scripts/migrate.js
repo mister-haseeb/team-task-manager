@@ -1,14 +1,12 @@
 // Runs every .sql file in /migrations once, in filename order.
-// Usage: npm run migrate (also runs on container start in production)
-require('dotenv').config({ quiet: true });
+// Usage: npm run migrate (also runs on container start in production, and before the tests)
 const fs = require('fs');
 const path = require('path');
-const { pool } = require('../src/config/db');
 
 // Any constant works; it just has to be the same for every app instance
 const MIGRATION_LOCK_ID = 727272;
 
-async function migrate() {
+async function migrate(pool, log = console.log) {
   const dir = path.join(__dirname, '..', 'migrations');
   const files = fs.readdirSync(dir).filter((f) => f.endsWith('.sql')).sort();
 
@@ -25,7 +23,7 @@ async function migrate() {
 
     for (const file of files) {
       if (done.has(file)) {
-        console.log(`skip  ${file}`);
+        log(`skip  ${file}`);
         continue;
       }
       const sql = fs.readFileSync(path.join(dir, file), 'utf8');
@@ -34,7 +32,7 @@ async function migrate() {
         await client.query(sql);
         await client.query('INSERT INTO schema_migrations (filename) VALUES ($1)', [file]);
         await client.query('COMMIT');
-        console.log(`ran   ${file}`);
+        log(`ran   ${file}`);
       } catch (err) {
         await client.query('ROLLBACK');
         throw err;
@@ -46,12 +44,20 @@ async function migrate() {
   }
 }
 
-migrate()
-  .then(() => {
-    console.log('Migrations complete');
-    return pool.end();
-  })
-  .catch((err) => {
-    console.error('Migration failed:', err.message);
-    process.exit(1);
-  });
+module.exports = { migrate };
+
+// Run directly: node scripts/migrate.js
+if (require.main === module) {
+  require('dotenv').config({ quiet: true });
+  const { pool } = require('../src/config/db');
+
+  migrate(pool)
+    .then(() => {
+      console.log('Migrations complete');
+      return pool.end();
+    })
+    .catch((err) => {
+      console.error('Migration failed:', err.message);
+      process.exit(1);
+    });
+}

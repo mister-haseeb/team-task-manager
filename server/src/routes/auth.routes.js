@@ -14,6 +14,8 @@ const credentialsLimiter = rateLimit({
   standardHeaders: 'draft-8',
   legacyHeaders: false,
   message: { error: 'Too many attempts, please try again later' },
+  // The test suite registers many users from one IP
+  skip: () => process.env.NODE_ENV === 'test',
 });
 
 router.post('/register', credentialsLimiter, validate(registerSchema), controller.register);
