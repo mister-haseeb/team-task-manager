@@ -13,6 +13,7 @@ function wasDismissed(userId) {
 }
 
 // Due-date reminders, shown once per login (dismissing hides them until the next login).
+// refreshKey changes after tasks are edited, so finished tasks drop off the list.
 export default function RemindersBanner({ userId, refreshKey, onOpenTask }) {
   const [tasks, setTasks] = useState([]);
   const [dismissed, setDismissed] = useState(() => wasDismissed(userId));
