@@ -4,6 +4,7 @@ const requireAuth = require('../middleware/requireAuth');
 const authRoutes = require('./auth.routes');
 const teamRoutes = require('./team.routes');
 const taskRoutes = require('./task.routes');
+const inviteRoutes = require('./invite.routes');
 
 const router = express.Router();
 
@@ -14,5 +15,6 @@ router.use('/auth', authRoutes);
 router.use(requireAuth);
 router.use('/teams', teamRoutes);
 router.use('/tasks', taskRoutes);
+router.use('/invites', inviteRoutes);
 
 module.exports = router;
