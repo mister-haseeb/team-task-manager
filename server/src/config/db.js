@@ -13,4 +13,20 @@ pool.on('error', (err) => {
 // Small helper so services can write: db.query(sql, params)
 const query = (text, params) => pool.query(text, params);
 
-module.exports = { pool, query };
+// Runs fn(client) inside BEGIN/COMMIT, rolling back if it throws.
+async function withTransaction(fn) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const result = await fn(client);
+    await client.query('COMMIT');
+    return result;
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+module.exports = { pool, query, withTransaction };
