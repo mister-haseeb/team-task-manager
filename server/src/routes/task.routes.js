@@ -10,6 +10,7 @@ const validateTaskId = validate(idParam('taskId'), 'params');
 // GET /api/tasks?teamId=&assigneeId=&status=&priority=&search=
 router.get('/', validate(taskQuerySchema, 'query'), controller.list);
 router.post('/', validate(createTaskSchema), controller.create);
+router.get('/reminders', controller.reminders);
 
 router.get('/:taskId', validateTaskId, controller.get);
 router.patch('/:taskId', validateTaskId, validate(updateTaskSchema), controller.update);

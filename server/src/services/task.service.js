@@ -49,6 +49,20 @@ async function listTasks(userId, { teamId, assigneeId, status, priority, search 
   return rows;
 }
 
+// Unfinished tasks assigned to the user that are overdue or due within `days` days.
+async function listDueSoon(userId, days = 3) {
+  const { rows } = await db.query(
+    `${TASK_SELECT}
+     WHERE t.assignee_id = $1
+       AND t.status <> 'done'
+       AND t.due_date IS NOT NULL
+       AND t.due_date <= CURRENT_DATE + $2::int
+     ORDER BY t.due_date ASC`,
+    [userId, days]
+  );
+  return rows;
+}
+
 async function getTask(taskId, userId) {
   const { rows } = await db.query(`${TASK_SELECT} WHERE t.id = $2`, [userId, taskId]);
   if (!rows[0]) throw httpError(404, 'Task not found');
@@ -104,4 +118,4 @@ async function deleteTask(taskId, userId) {
   await db.query('DELETE FROM tasks WHERE id = $1', [taskId]);
 }
 
-module.exports = { listTasks, getTask, createTask, updateTask, deleteTask };
+module.exports = { listTasks, listDueSoon, getTask, createTask, updateTask, deleteTask };

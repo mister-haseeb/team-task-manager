@@ -4,6 +4,11 @@ async function list(req, res) {
   res.json({ tasks: await taskService.listTasks(req.user.id, req.validated.query) });
 }
 
+// Due-date reminders shown to the user after logging in.
+async function reminders(req, res) {
+  res.json({ tasks: await taskService.listDueSoon(req.user.id) });
+}
+
 async function get(req, res) {
   res.json({ task: await taskService.getTask(req.validated.params.taskId, req.user.id) });
 }
@@ -23,4 +28,4 @@ async function remove(req, res) {
   res.status(204).end();
 }
 
-module.exports = { list, get, create, update, remove };
+module.exports = { list, reminders, get, create, update, remove };
