@@ -1,0 +1,16 @@
+# Optional local PostgreSQL for development: docker compose up -d
+# Then use DATABASE_URL=postgresql://postgres:postgres@localhost:5432/team_task_manager
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: team_task_manager
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

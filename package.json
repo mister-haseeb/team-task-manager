@@ -1,16 +1,19 @@
 {
   "name": "team-task-manager",
   "version": "1.0.0",
-  "main": "index.js",
-  "devDependencies": {},
+  "private": true,
+  "description": "Team Task Manager: React + Express + PostgreSQL",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "install:all": "npm install --prefix server && npm install --prefix client",
+    "migrate": "npm run migrate --prefix server",
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "build": "npm run build --prefix client",
+    "start": "npm start --prefix server"
   },
   "repository": {
     "type": "git",
-    "url": "team-task-manager"
+    "url": "https://github.com/mister-haseeb/team-task-manager.git"
   },
-  "author": "",
-  "license": "ISC",
-  "description": ""
+  "license": "ISC"
 }
