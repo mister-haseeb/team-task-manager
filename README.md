@@ -106,6 +106,57 @@ Run these from the repository root:
 | `npm run dev:client`  | Start the Vite dev server                           |
 | `npm run build`       | Build the React app into `client/dist`              |
 | `npm start`           | Start the API (serves `client/dist` if it exists)   |
+| `npm test`            | Run the API test suite                              |
+
+## Tests
+
+The API is covered by integration tests (Jest + Supertest) in [server/tests](server/tests): auth and sessions, team and task CRUD, filters and search, role-based access, invites and reminders. They run against a real PostgreSQL database named after yours with a `_test` suffix (for example `team_task_manager_test`), which is created and migrated automatically and emptied before each test. Set `TEST_DATABASE_URL` to use a different one.
+
+```bash
+npm test
+```
+
+## CI/CD
+
+GitHub Actions runs two workflows from [.github/workflows](.github/workflows):
+
+- **CI** ([ci.yml](.github/workflows/ci.yml)) runs on every pull request and on pushes to `develop` and `main`. It runs the API tests against a PostgreSQL service container and lints and builds the client.
+- **Deploy** ([deploy.yml](.github/workflows/deploy.yml)) runs when `main` is updated: it runs CI again, then builds and deploys the app to Cloud Run. GitHub signs in to Google with Workload Identity Federation, so no service-account key is stored in GitHub. The job is skipped until the variables below are set.
+
+To enable deployments, first follow [Deploying to Google Cloud](#deploying-to-google-cloud) once, then:
+
+```bash
+PROJECT_ID=your-project-id
+REPO=mister-haseeb/team-task-manager
+PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format='value(projectNumber)')
+SA=github-deployer@$PROJECT_ID.iam.gserviceaccount.com
+
+# A service account that GitHub Actions deploys as
+gcloud iam service-accounts create github-deployer --display-name "GitHub Actions deployer"
+for role in roles/run.admin roles/iam.serviceAccountUser roles/cloudbuild.builds.editor \
+            roles/artifactregistry.admin roles/storage.admin roles/serviceusage.serviceUsageConsumer; do
+  gcloud projects add-iam-policy-binding $PROJECT_ID --member="serviceAccount:$SA" --role="$role"
+done
+
+# Trust GitHub's identity tokens, but only for this repository
+gcloud iam workload-identity-pools create github --location=global --display-name="GitHub"
+gcloud iam workload-identity-pools providers create-oidc github-repo --location=global \
+  --workload-identity-pool=github --issuer-uri=https://token.actions.githubusercontent.com \
+  --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository" \
+  --attribute-condition="assertion.repository=='$REPO'"
+gcloud iam service-accounts add-iam-policy-binding $SA --role=roles/iam.workloadIdentityUser \
+  --member="principalSet://iam.googleapis.com/projects/$PROJECT_NUMBER/locations/global/workloadIdentityPools/github/attribute.repository/$REPO"
+
+# Tell the workflow where to deploy (repository variables, not secrets: none of these are sensitive)
+gh variable set GCP_PROJECT_ID --body "$PROJECT_ID"
+gh variable set GCP_REGION --body us-central1
+gh variable set GCP_CLOUD_SQL_INSTANCE --body "$PROJECT_ID:us-central1:ttm-db"
+gh variable set GCP_DEPLOY_SERVICE_ACCOUNT --body "$SA"
+gh variable set GCP_WORKLOAD_IDENTITY_PROVIDER \
+  --body "projects/$PROJECT_NUMBER/locations/global/workloadIdentityPools/github/providers/github-repo"
+```
+
+After that, every merge into `main` deploys automatically. You can also start a deployment from the **Actions** tab with **Run workflow**.
 
 ## API reference
 
