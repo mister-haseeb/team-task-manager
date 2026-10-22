@@ -1,5 +1,10 @@
 // One shared PostgreSQL connection pool for the whole app.
-const { Pool } = require('pg');
+const { Pool, types } = require('pg');
+
+// Return DATE columns as plain 'YYYY-MM-DD' strings instead of JS Dates,
+// so due dates aren't shifted by the server's timezone.
+const DATE_OID = 1082;
+types.setTypeParser(DATE_OID, (value) => value);
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
