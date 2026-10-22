@@ -62,3 +62,37 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run build
+
+  docker:
+    name: Production image
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: team_task_manager
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the image used by Cloud Run and Render
+        run: docker build -t team-task-manager .
+      - name: Start it (runs migrations) and check the API and the React app respond
+        run: |
+          docker run -d --name app --network host \
+            -e PORT=8080 \
+            -e SESSION_SECRET=ci-secret \
+            -e DATABASE_URL=postgresql://postgres:postgres@localhost:5432/team_task_manager \
+            team-task-manager
+          curl --fail --silent --retry 10 --retry-delay 2 --retry-all-errors http://localhost:8080/api/health
+          curl --fail --silent http://localhost:8080/login | grep -q '<div id="root">'
+      - name: Container logs
+        if: always()
+        run: docker logs app
