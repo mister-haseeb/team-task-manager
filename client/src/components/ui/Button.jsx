@@ -3,6 +3,8 @@ const VARIANTS = {
   secondary: 'bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 focus-visible:outline-slate-400',
   danger: 'bg-red-600 text-white hover:bg-red-700 focus-visible:outline-red-600',
   ghost: 'text-slate-600 hover:bg-slate-100 focus-visible:outline-slate-400',
+  'danger-ghost': 'text-red-600 hover:bg-red-50 focus-visible:outline-red-600',
+  link: 'text-indigo-600 hover:bg-indigo-50 focus-visible:outline-indigo-600',
 };
 
 export default function Button({ variant = 'primary', loading = false, className = '', children, ...props }) {

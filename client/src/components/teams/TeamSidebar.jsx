@@ -19,7 +19,7 @@ export default function TeamSidebar({ teams, selectedTeamId, onSelect, onCreate 
     <aside className="lg:w-64 lg:shrink-0">
       <div className="mb-2 flex items-center justify-between">
         <h2 className="text-xs font-semibold tracking-wide text-slate-500 uppercase">Teams</h2>
-        <Button variant="ghost" className="px-2 py-1 text-indigo-600" onClick={onCreate}>
+        <Button variant="link" className="px-2 py-1" onClick={onCreate}>
           + New team
         </Button>
       </div>
