@@ -36,7 +36,7 @@ async function listTasks(userId, { teamId, assigneeId, status, priority, search 
        AND ($4::text IS NULL OR t.status = $4)
        AND ($5::text IS NULL OR t.priority = $5)
        AND ($6::text IS NULL OR t.title ILIKE $6 OR t.description ILIKE $6)
-     ORDER BY t.due_date ASC NULLS LAST, t.created_at DESC`,
+     ORDER BY (t.status = 'done'), t.due_date ASC NULLS LAST, t.created_at DESC`,
     [
       userId,
       teamId ?? null,
